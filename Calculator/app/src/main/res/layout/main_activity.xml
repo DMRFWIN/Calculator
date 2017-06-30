@@ -7,6 +7,7 @@
 
     <!--结果显示框-->
     <EditText
+        android:id="@+id/input"
         android:textSize="20sp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -137,7 +138,7 @@
             android:id="@+id/nine"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="7"
+            android:text="9"
             android:textAllCaps="false" />
 
         <Button
