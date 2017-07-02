@@ -1,55 +1,68 @@
 package com.example.xfg.calculator;
 
-import android.app.Activity;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
+//import java.text.NumberFormat;
 
 import java.text.DecimalFormat;
-import java.util.StringTokenizer;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.widget.*;
+import android.util.Log;
+import android.view.View.*;
+import android.view.*;
+
+import java.util.*;
 
 public class MainActivity extends Activity {
-
     //0~9十个按键
     private Button[] btn = new Button[10];
-    //显示器，用于指示显示结果
+    //显示器,用于显示输出结果
     private EditText input;
-    //显示器下方的记忆器，用于记录上一次运算结果
+    //显示器下方的记忆器，用于记录上一次计算结果
     private TextView mem;
-    //三角计算时的标志显示，角度还是弧度
+    //三角计算时标志显示：角度还是弧度
     private TextView _drg;
-    //小提示，用于加强人机交互的弱检测、提示功能
+    //小提示，用于加强人机交互的弱检测、提示
     private TextView tip;
-
     private Button
-            div, mul, sub, add, equal, // "/","*","-","+","="
-            sin, cos, tan, log, ln,
-            sqrt, square, factorial, bksp,//根号、平方，阶乘，后退键
-            left, right, dot, exit, drg,//左括号，右括号，小数点，退出，角度弧度控制键
-            mc, c;//mem清屏键，input清屏键
-    //保存原来算式的样子，为了输出时好看，因为计算时算式样子会被改变
+            div, mul, sub, add, equal,            // ÷ × - + =
+            sin, cos, tan, log, ln,               //函数
+            sqrt, square, factorial, bksp,      //根号  平方  阶乘   退格
+            left, right, dot, exit, drg,          //（     ）  .  退出     角度弧度控制键
+            mc, c;                                // mem清屏键    input清屏键
+    //保存原来的算式样子，为了输出时好看，因计算时，算式样子被改变
     public String str_old;
     //变换样子后的式子
     public String str_new;
     //输入控制，true为重新输入，false为接着输入
-    public boolean v_begin = true;
+    public boolean vbegin = true;
     //控制DRG按键，true为角度，false为弧度
     public boolean drg_flag = true;
-    //π值
+    //π值：3.14
     public double pi = 4 * Math.atan(1);
-    //true表示正确，可以继续输入，false表示有误，输入被锁定
+    //true表示正确，可以继续输入；false表示有误，输入被锁定
     public boolean tip_lock = true;
-    //判断是不是按下=号之前的输入，true表示输入在=之前，false表示输入在=之后
+    //判断是否是按=之后的输入，true表示输入在=之前，false反之
     public boolean equals_flag = true;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
         setContentView(R.layout.main_activity);
+        //获取界面元素
+        input = (EditText) findViewById(R.id.input);
+        mem = (TextView) findViewById(R.id.mem);
+        tip = (TextView) findViewById(R.id.tip);
+        _drg = (TextView) findViewById(R.id._drg);
+        btn[0] = (Button) findViewById(R.id.zero);
+        btn[1] = (Button) findViewById(R.id.one);
+        btn[2] = (Button) findViewById(R.id.two);
+        btn[3] = (Button) findViewById(R.id.three);
+        btn[4] = (Button) findViewById(R.id.four);
+        btn[5] = (Button) findViewById(R.id.five);
+        btn[6] = (Button) findViewById(R.id.six);
+        btn[7] = (Button) findViewById(R.id.seven);
+        btn[8] = (Button) findViewById(R.id.eight);
+        btn[9] = (Button) findViewById(R.id.nine);
         div = (Button) findViewById(R.id.divide);
         mul = (Button) findViewById(R.id.mul);
         sub = (Button) findViewById(R.id.sub);
@@ -71,28 +84,16 @@ public class MainActivity extends Activity {
         drg = (Button) findViewById(R.id.drg);
         mc = (Button) findViewById(R.id.mc);
         c = (Button) findViewById(R.id.c);
-        btn[0] = (Button) findViewById(R.id.zero);
-        btn[1] = (Button) findViewById(R.id.one);
-        btn[2] = (Button) findViewById(R.id.two);
-        btn[3] = (Button) findViewById(R.id.three);
-        btn[4] = (Button) findViewById(R.id.four);
-        btn[5] = (Button) findViewById(R.id.five);
-        btn[6] = (Button) findViewById(R.id.six);
-        btn[7] = (Button) findViewById(R.id.seven);
-        btn[8] = (Button) findViewById(R.id.eight);
-        btn[9] = (Button) findViewById(R.id.nine);
-        input = (EditText) findViewById(R.id.input);
-        mem = (TextView) findViewById(R.id.mem);
-        tip = (TextView) findViewById(R.id.tip);
-
-        for (int i = 0; i < 10; i++) {
+        //为数字按键绑定监听器
+        for (int i = 0; i < 10; ++i) {
             btn[i].setOnClickListener(actionPerformed);
         }
+        //为+-x÷等按键绑定监听器
         div.setOnClickListener(actionPerformed);
         mul.setOnClickListener(actionPerformed);
         sub.setOnClickListener(actionPerformed);
         add.setOnClickListener(actionPerformed);
-        equal.setOnClickListener(actionPerformed); // "/","*","-","+","="
+        equal.setOnClickListener(actionPerformed);
         sin.setOnClickListener(actionPerformed);
         cos.setOnClickListener(actionPerformed);
         tan.setOnClickListener(actionPerformed);
@@ -109,319 +110,346 @@ public class MainActivity extends Activity {
         drg.setOnClickListener(actionPerformed);
         mc.setOnClickListener(actionPerformed);
         c.setOnClickListener(actionPerformed);
-
     }
 
-    /**
+    /*
      * 键盘命令捕捉
      */
     //命令缓存，用于检测输入合法性
     String[] Tipcommand = new String[500];
     //Tipcommand的指针
     int tip_i = 0;
-
-    private View.OnClickListener actionPerformed = new View.OnClickListener() {
-        @Override
+    private OnClickListener actionPerformed = new OnClickListener() {
         public void onClick(View v) {
-            //获取按键上的命令
+            //按键上的命令获取
             String command = ((Button) v).getText().toString();
-            //获取显示器上的字符串
+            //显示器上的字符串
             String str = input.getText().toString();
             //检测输入是否合法
             if (equals_flag == false && "0123456789.()sincostanlnlogn!+-×÷√^".indexOf(command) != -1) {
                 //检测显示器上的字符串是否合法
                 if (right(str)) {
-                    //如果当前按键含有"+-×÷√^)"
                     if ("+-×÷√^)".indexOf(command) != -1) {
                         for (int i = 0; i < str.length(); i++) {
                             Tipcommand[tip_i] = String.valueOf(str.charAt(i));
                             tip_i++;
                         }
+                        vbegin = false;
                     }
                 } else {
                     input.setText("0");
-                    v_begin = true;
+                    vbegin = true;
                     tip_i = 0;
                     tip_lock = true;
-                    tip.setText("欢迎使用");
+                    tip.setText("欢迎使用！");
                 }
+
                 equals_flag = true;
             }
-
-            if (tip_i > 0) {
+            if (tip_i > 0)
                 TipChecker(Tipcommand[tip_i - 1], command);
-            } else if (tip_i == 0) {
+            else if (tip_i == 0) {
                 TipChecker("#", command);
             }
-            //如果输入正确，就把对应按键的文本缓存到Tipcommand中
             if ("0123456789.()sincostanlnlogn!+-×÷√^".indexOf(command) != -1 && tip_lock) {
                 Tipcommand[tip_i] = command;
                 tip_i++;
             }
-            //如果输入正确，就将对应按键文本显示到显示器上
-            if ("0123456789.()sincostanlnlogn!+-×÷√^".indexOf(command) != -1 && tip_lock) {
+            //若输入正确，则将输入信息显示到显示器上
+            if ("0123456789.()sincostanlnlogn!+-×÷√^".indexOf(command) != -1
+                    && tip_lock) { //共25个按键
                 print(command);
-                //如果单击了DRG，就切换当前弧度角度制，并将切换结果显示到按键上方
+                //若果点击了“DRG”，则切换当前弧度角度制，并将切换后的结果显示到按键上方。
             } else if (command.compareTo("DRG") == 0 && tip_lock) {
-                if (drg_flag) {
+                if (drg_flag == true) {
                     drg_flag = false;
-                    _drg.setText("  RAD");
+                    _drg.setText("   RAD");
                 } else {
                     drg_flag = true;
-                    _drg.setText("  DEG");
+                    _drg.setText("   DEG");
                 }
-                //如果输入的是退格键，并且是在按=之前
-            } else if (command.compareTo("Bksp") == 0 && tip_lock && equals_flag) {
+                //如果输入时退格键，并且是在按=之前
+            } else if (command.compareTo("Bksp") == 0 && equals_flag) {
                 //一次删除3个字符
                 if (TTO(str) == 3) {
-                    if (str.length() > 3) {
+                    if (str.length() > 3)
                         input.setText(str.substring(0, str.length() - 3));
-                    } else {
+                    else if (str.length() == 3) {
                         input.setText("0");
-                        v_begin = true;
+                        vbegin = true;
                         tip_i = 0;
-                        tip.setText("欢迎使用");
+                        tip.setText("欢迎使用！");
                     }
-                    //一次删除2个字符
+                    //依次删除2个字符
                 } else if (TTO(str) == 2) {
-                    if (str.length() > 2) {
+                    if (str.length() > 2)
                         input.setText(str.substring(0, str.length() - 2));
-                    } else {
+                    else if (str.length() == 2) {
                         input.setText("0");
-                        v_begin = true;
+                        vbegin = true;
                         tip_i = 0;
-                        tip.setText("欢迎使用");
+                        tip.setText("欢迎使用！");
                     }
-                    //一次删除一个字符
+                    //依次删除一个字符
                 } else if (TTO(str) == 1) {
-                    //如果之前的字符串合法则删除一个字符
+                    //若之前输入的字符串合法则删除一个字符
                     if (right(str)) {
-                        if (str.length() > 1) {
+                        if (str.length() > 1)
                             input.setText(str.substring(0, str.length() - 1));
-                        } else {
+                        else if (str.length() == 1) {
                             input.setText("0");
-                            v_begin = true;
+                            vbegin = true;
                             tip_i = 0;
-                            tip.setText("欢迎使用");
+                            tip.setText("欢迎使用！");
                         }
-                        //如果之前的字符串不合法则全部删除
+                        //若之前输入的字符串不合法则删除全部字符
                     } else {
                         input.setText("0");
-                        v_begin = true;
+                        vbegin = true;
                         tip_i = 0;
-                        tip.setText("欢迎使用");
+                        tip.setText("欢迎使用！");
                     }
                 }
-                //如果删除了字符之后只剩下一个-（比如原来是-2，删除了一位之后剩下了一个-号，他没什么存在的意义，所以应该删去）
-
-                if (input.getText().equals("-") || equals_flag == false) {
+                if (input.getText().toString().compareTo("-") == 0 || equals_flag == false) {
                     input.setText("0");
-                    v_begin = true;
+                    vbegin = true;
                     tip_i = 0;
                     tip.setText("欢迎使用！");
                 }
                 tip_lock = true;
-                if (tip_i > 0) tip_i--;
-                //如果是在按下=之后按下的删除键
-            } else if (command.compareTo("Bksp") == 0 && !equals_flag) {
-                //将显示器清空
+                if (tip_i > 0)
+                    tip_i--;
+                //如果是在按=之后输入退格键
+            } else if (command.compareTo("Bksp") == 0 && equals_flag == false) {
+                //将显示器内容设置为0
                 input.setText("0");
-                v_begin = true;////重新输入标志置为true
-                tip_i = 0;
-                tip_lock = true;     //表明可以继续输入
-                tip.setText("欢迎使用！");
-                //如果点击的是清除键
-            } else if (command.compareTo("C") == 0) {
-                input.setText("0");
-                v_begin = true;
+                vbegin = true;
                 tip_i = 0;
                 tip_lock = true;
                 tip.setText("欢迎使用！");
-                equals_flag = true;//表明接下来的输入在=之前
-                //如果输入的是MC，则将存储器的内容清空
+                //如果输入的是清除键
+            } else if (command.compareTo("C") == 0) {
+                //将显示器内容设置为0
+                input.setText("0");
+                //重新输入标志置为true
+                vbegin = true;
+                //缓存命令位数清0
+                tip_i = 0;
+                //表明可以继续输入
+                tip_lock = true;
+                //表明输入=之前
+                equals_flag = true;
+                tip.setText("欢迎使用！");
+                //如果输入的是”MC“，则将存储器内容清0
             } else if (command.compareTo("MC") == 0) {
                 mem.setText("0");
-                //如果按exit则退出程序
-            } else if (command.compareTo("EXIT") == 0) {
+                //如果按”exit“则退出程序
+            } else if (command.compareTo("exit") == 0) {
                 System.exit(0);
-                //如果是=，并且输入合法
-            } else if (command.compareTo("=") == 0 && right(str) && equals_flag && tip_lock) {
+                //如果输入的是=号，并且输入合法
+            } else if (command.compareTo("=") == 0 && tip_lock && right(str) && equals_flag) {
                 tip_i = 0;
-                //设置不可继续输入
+                //表明不可以继续输入
                 tip_lock = false;
-                //表示输入=之后
+                //表明输入=之后
                 equals_flag = false;
-                //保存原来式子的样子
+                //保存原来算式样子
                 str_old = str;
-                //替换算式中的运算符便于计算
+                //替换算式中的运算符，便于计算
                 str = str.replaceAll("sin", "s");
                 str = str.replaceAll("cos", "c");
                 str = str.replaceAll("tan", "t");
                 str = str.replaceAll("log", "g");
                 str = str.replaceAll("ln", "l");
                 str = str.replaceAll("n!", "!");
-
-                //重新输入表示设置为true
-                v_begin = true;
-                //将-1转化成-
-                str = str.replaceAll("-1×", "-");
+                //重新输入标志设置true
+                vbegin = true;
+                //将-1x转换成-
+                str_new = str.replaceAll("-", "-1×");
                 //计算算式结果
-                new calc().process(str);
+                new calc().process(str_new);
             }
+            //表明可以继续输入
             tip_lock = true;
         }
     };
 
-    /*
-         * 检测函数，返回值为3、2、1  表示应当一次删除几个？  Three+Two+One = TTO
-         * 为Bksp按钮的删除方式提供依据
-         * 返回3，表示str尾部为sin、cos、tan、log中的一个，应当一次删除3个
-         * 返回2，表示str尾部为ln、n!中的一个，应当一次删除2个
-         * 返回1，表示为除返回3、2外的所有情况，只需删除一个（包含非法字符时要另外考虑：应清屏）
-         */
-    private int TTO(String str) {
-        int l = str.length() - 1;
-        if (l > 1) {
-            if ((str.charAt(l) == 'n' && str.charAt(l - 1) == 'i' && str.charAt(l - 2) == 's') ||
-                    (str.charAt(l) == 'n' && str.charAt(l - 1) == 'a' && str.charAt(l - 2) == 't') ||
-                    (str.charAt(l) == 's' && str.charAt(l - 1) == 'o' && str.charAt(l - 2) == 'c')) {
-                return 3;
-            }
-        }
-        if (l > 0) {
-            if ((str.charAt(l) == 'n' && str.charAt(l - 1) == 'l') || (str.charAt(l) == '!' && str.charAt(l - 1) == 'n')) {
-                return 2;
-            }
-        }
-        return 1;
+    //向input输出字符
+    private void print(String str) {
+        //清屏后输出
+        if (vbegin)
+            input.setText(str);
+            //在屏幕原str后增添字符
+        else
+            input.append(str);
+        vbegin = false;
     }
 
-    //向input输出字符串
-    private void print(String command) {
-        //如果标识符是重新输入，就将原来的清空，重新设置显示文本
-        if (v_begin) {
-            input.setText(command);
+    /*
+     * 判断一个str是否是合法的，返回值为true、false
+     * 只包含0123456789.()sincostanlnlogn!+-×÷√^的是合法的str，返回true
+     * 包含了除0123456789.()sincostanlnlogn!+-×÷√^以外的字符的str为非法的，返回false
+     */
+    private boolean right(String str) {
+        int i = 0;
+        for (i = 0; i < str.length(); i++) {
+            if (str.charAt(i) != '0' && str.charAt(i) != '1' && str.charAt(i) != '2' &&
+                    str.charAt(i) != '3' && str.charAt(i) != '4' && str.charAt(i) != '5' &&
+                    str.charAt(i) != '6' && str.charAt(i) != '7' && str.charAt(i) != '8' &&
+                    str.charAt(i) != '9' && str.charAt(i) != '.' && str.charAt(i) != '-' &&
+                    str.charAt(i) != '+' && str.charAt(i) != '×' && str.charAt(i) != '÷' &&
+                    str.charAt(i) != '√' && str.charAt(i) != '^' && str.charAt(i) != 's' &&
+                    str.charAt(i) != 'i' && str.charAt(i) != 'n' && str.charAt(i) != 'c' &&
+                    str.charAt(i) != 'o' && str.charAt(i) != 't' && str.charAt(i) != 'a' &&
+                    str.charAt(i) != 'l' && str.charAt(i) != 'g' && str.charAt(i) != '(' &&
+                    str.charAt(i) != ')' && str.charAt(i) != '!')
+                break;
+        }
+        if (i == str.length()) {
+            return true;
         } else {
-            //如果标识符是继续输入，则在原来的字符串追加显示现在的字符
-            input.append(command);
+            return false;
         }
-        v_begin = false;
     }
 
     /*
-    * 检测函数，对str进行前后语法检测
-    * 为Tip的提示方式提供依据，与TipShow()配合使用
-    *  编号 字符    其后可以跟随的合法字符
-    *   1  （                 数字|（|-|.|函数
-    *   2   ）                算符|）|√ ^
-    *   3  .      数字|算符|）|√ ^
-    *   4   数字        .|数字|算符|）|√ ^
-    *   5   算符             数字|（|.|函数
-    *   6 √ ^     （ |. | 数字
-    *   7  函数           数字|（|.
-    *
-    * 小数点前后均可省略，表示0
-    * 数字第一位可以为0
-    */
+     * 检测函数，返回值为3、2、1  表示应当一次删除几个？  Three+Two+One = TTO
+     * 为Bksp按钮的删除方式提供依据
+     * 返回3，表示str尾部为sin、cos、tan、log中的一个，应当一次删除3个
+     * 返回2，表示str尾部为ln、n!中的一个，应当一次删除2个
+     * 返回1，表示为除返回3、2外的所有情况，只需删除一个（包含非法字符时要另外考虑：应清屏）
+     */
+    private int TTO(String str) {
+        if ((str.charAt(str.length() - 1) == 'n' &&
+                str.charAt(str.length() - 2) == 'i' &&
+                str.charAt(str.length() - 3) == 's') ||
+                (str.charAt(str.length() - 1) == 's' &&
+                        str.charAt(str.length() - 2) == 'o' &&
+                        str.charAt(str.length() - 3) == 'c') ||
+                (str.charAt(str.length() - 1) == 'n' &&
+                        str.charAt(str.length() - 2) == 'a' &&
+                        str.charAt(str.length() - 3) == 't') ||
+                (str.charAt(str.length() - 1) == 'g' &&
+                        str.charAt(str.length() - 2) == 'o' &&
+                        str.charAt(str.length() - 3) == 'l')) {
+            return 3;
+        } else if ((str.charAt(str.length() - 1) == 'n' &&
+                str.charAt(str.length() - 2) == 'l') ||
+                (str.charAt(str.length() - 1) == '!' &&
+                        str.charAt(str.length() - 2) == 'n')) {
+            return 2;
+        } else {
+            return 1;
+        }
+    }
+
+    /*
+     * 检测函数，对str进行前后语法检测
+     * 为Tip的提示方式提供依据，与TipShow()配合使用
+     *  编号 字符    其后可以跟随的合法字符
+     *   1  （                 数字|（|-|.|函数
+     *   2   ）                算符|）|√ ^
+     *   3  .      数字|算符|）|√ ^
+     *   4   数字        .|数字|算符|）|√ ^
+     *   5   算符             数字|（|.|函数
+     *   6 √ ^     （ |. | 数字
+     *   7  函数           数字|（|.
+     *
+     * 小数点前后均可省略，表示0
+     * 数字第一位可以为0
+     */
     private void TipChecker(String tipcommand1, String tipcommand2) {
-        //Tipcode1表示错误类型，Typecode2表示名词解释类型
-        int Tipecode1 = 0, Tipecode2 = 0;
+        //Tipcode1表示错误类型，Tipcode2表示名词解释类型
+        int Tipcode1 = 0, Tipcode2 = 0;
         //表示命令类型
-        int typepe1 = 0, typepe2 = 0;
+        int tiptype1 = 0, tiptype2 = 0;
         //括号数
-        int backet = 0;
-        //"+-×÷√^"不能作为第一位
-        if (tipcommand1.compareTo("#") == 0 && (tipcommand2.compareTo("+") == 0 || tipcommand2.compareTo("-") == 0 ||
-                tipcommand2.compareTo("×") == 0 || tipcommand2.compareTo("÷") == 0 || tipcommand2.compareTo("√") == 0 ||
-                tipcommand2.compareTo("^") == 0
-        )) {
-            Tipecode1 = -1;
-            //定义存储字符串中最后一位的类型
-        } else if (tipcommand1.compareTo("#") != 0) {
+        int bracket = 0;
+        //“+-x÷√^”不能作为第一位
+        if (tipcommand1.compareTo("#") == 0 && (tipcommand2.compareTo("÷") == 0 ||
+                tipcommand2.compareTo("×") == 0 || tipcommand2.compareTo("+") == 0 ||
+                tipcommand2.compareTo(")") == 0 || tipcommand2.compareTo("√") == 0 ||
+                tipcommand2.compareTo("^") == 0)) {
+            Tipcode1 = -1;
+        }
+        //定义存储字符串中最后一位的类型
+        else if (tipcommand1.compareTo("#") != 0) {
             if (tipcommand1.compareTo("(") == 0) {
-                typepe1 = 1;
+                tiptype1 = 1;
             } else if (tipcommand1.compareTo(")") == 0) {
-                typepe1 = 2;
+                tiptype1 = 2;
             } else if (tipcommand1.compareTo(".") == 0) {
-                typepe1 = 3;
+                tiptype1 = 3;
             } else if ("0123456789".indexOf(tipcommand1) != -1) {
-                typepe1 = 4;
+                tiptype1 = 4;
             } else if ("+-×÷".indexOf(tipcommand1) != -1) {
-                typepe1 = 5;
+                tiptype1 = 5;
             } else if ("√^".indexOf(tipcommand1) != -1) {
-                typepe1 = 6;
+                tiptype1 = 6;
             } else if ("sincostanloglnn!".indexOf(tipcommand1) != -1) {
-                typepe1 = 7;
+                tiptype1 = 7;
             }
             //定义欲输入的按键类型
             if (tipcommand2.compareTo("(") == 0) {
-                typepe2 = 1;
+                tiptype2 = 1;
             } else if (tipcommand2.compareTo(")") == 0) {
-                typepe2 = 2;
+                tiptype2 = 2;
             } else if (tipcommand2.compareTo(".") == 0) {
-                typepe2 = 3;
+                tiptype2 = 3;
             } else if ("0123456789".indexOf(tipcommand2) != -1) {
-                typepe2 = 4;
+                tiptype2 = 4;
             } else if ("+-×÷".indexOf(tipcommand2) != -1) {
-                typepe2 = 5;
+                tiptype2 = 5;
             } else if ("√^".indexOf(tipcommand2) != -1) {
-                typepe2 = 6;
+                tiptype2 = 6;
             } else if ("sincostanloglnn!".indexOf(tipcommand2) != -1) {
-                typepe2 = 7;
+                tiptype2 = 7;
             }
-        }
 
-        switch (typepe1) {
-            case 1: {
-                if (typepe2 == 2 || (typepe2 == 5 && tipcommand2.compareTo("-") != 0) || typepe2 == 6) {
-                    Tipecode1 = 1;
-                }
-                break;
-            }
-            case 2: {
-                if (typepe2 == 1 || typepe2 == 3 || typepe2 == 4 || typepe2 == 7) {
-                    Tipecode1 = 2;
-                }
-                break;
-            }
-            case 3: {
-                if (typepe2 == 1 || typepe2 == 7) {
-                    Tipecode1 = 3;
-                }
-                if (typepe2 == 3) {
+            switch (tiptype1) {
+                case 1:
+                    //左括号后面直接接右括号,“+x÷”（负号“-”不算）,或者"√^"
+                    if (tiptype2 == 2 || (tiptype2 == 5 && tipcommand2.compareTo("-") != 0) ||
+                            tiptype2 == 6)
+                        Tipcode1 = 1;
+                    break;
+                case 2:
+                    //右括号后面接左括号，数字，“+-x÷sin^...”
+                    if (tiptype2 == 1 || tiptype2 == 3 || tiptype2 == 4 || tiptype2 == 7)
+                        Tipcode1 = 2;
+                    break;
+                case 3:
+                    //“.”后面接左括号或者“sincos...”
+                    if (tiptype2 == 1 || tiptype2 == 7)
+                        Tipcode1 = 3;
                     //连续输入两个“.”
-                    Tipecode1 = 8;
-                }
-                break;
-            }
-            case 4: {
-                if (typepe2 == 1 || typepe2 == 7) {
-                    Tipecode1 = 4;
-                }
-                break;
-            }
-            case 5: {
-                if (typepe2 == 2 || typepe2 == 5 || typepe2 == 6) {
-                    Tipecode1 = 5;
-                }
-                break;
-            }
-            case 6: {
-                //“√^”后面直接接右括号，“+-x÷√^”以及“sincos...”
-                if (typepe2 == 2 || typepe2 == 5 || typepe2 == 6 || typepe2 == 7)
-                    Tipecode1 = 6;
-                break;
-            }
-            case 7: {
-                if (typepe2 == 2 || typepe2 == 5 || typepe2 == 6 || typepe2 == 7) {
-                    Tipecode1 = 7;
-                }
-                break;
+                    if (tiptype2 == 3)
+                        Tipcode1 = 8;
+                    break;
+                case 4:
+                    //数字后面直接接左括号或者“sincos...”
+                    if (tiptype2 == 1 || tiptype2 == 7)
+                        Tipcode1 = 4;
+                    break;
+                case 5:
+                    //“+-x÷”后面直接接右括号，“+-x÷√^”
+                    if (tiptype2 == 2 || tiptype2 == 5 || tiptype2 == 6)
+                        Tipcode1 = 5;
+                    break;
+                case 6:
+                    //“√^”后面直接接右括号，“+-x÷√^”以及“sincos...”
+                    if (tiptype2 == 2 || tiptype2 == 5 || tiptype2 == 6 || tiptype2 == 7)
+                        Tipcode1 = 6;
+                    break;
+                case 7:
+                    //“sincos...”后面直接接右括号“+-x÷√^”以及“sincos...”
+                    if (tiptype2 == 2 || tiptype2 == 5 || tiptype2 == 6 || tiptype2 == 7)
+                        Tipcode1 = 7;
+                    break;
             }
         }
-        //檢查小数点的重复性   Tipecode1==0表示前面检查的问题不存在
-        if (Tipecode1 == 0 && tipcommand2.compareTo(".") == 0) {
-            //用来计数小数点的个数
+        //检测小数点的重复性，Tipconde1=0,表明满足前面的规则
+        if (Tipcode1 == 0 && tipcommand2.compareTo(".") == 0) {
             int tip_point = 0;
             for (int i = 0; i < tip_i; i++) {
                 //若之前出现一个小数点点，则小数点计数加1
@@ -442,76 +470,74 @@ public class MainActivity extends Activity {
             tip_point++;
             //若小数点计数大于1，表明小数点重复了
             if (tip_point > 1) {
-                Tipecode1 = 8;
+                Tipcode1 = 8;
             }
         }
-
-        //检查右括号的匹配
-        if (Tipecode1 == 0 && tipcommand2.compareTo(")") == 0) {
-            int tip_rignt_backet = 0;
+        //检测右括号是否匹配
+        if (Tipcode1 == 0 && tipcommand2.compareTo(")") == 0) {
+            int tip_right_bracket = 0;
             for (int i = 0; i < tip_i; i++) {
-                //每出现一个左括号，则计数加1
+                //如果出现一个左括号，则计数加1
                 if (Tipcommand[i].compareTo("(") == 0) {
-                    tip_rignt_backet++;
+                    tip_right_bracket++;
                 }
-                //每出现一个右括号，则计数减1
+                //如果出现一个右括号，则计数减1
                 if (Tipcommand[i].compareTo(")") == 0) {
-                    tip_rignt_backet--;
+                    tip_right_bracket--;
                 }
             }
-            //若tip_rignt_backet==0,则说明没有对应的左括号与当前的右括号匹配
-            if (tip_rignt_backet == 0) {
-                Tipecode1 = 10;
+            //如果右括号计数=0,表明没有响应的左括号与当前右括号匹配
+            if (tip_right_bracket == 0) {
+                Tipcode1 = 10;
             }
         }
-
-
         //检查输入=的合法性
-        if (Tipecode1 == 0 && tipcommand2.compareTo("=") == 0) {
-            int tip_backet = 0;
+        if (Tipcode1 == 0 && tipcommand2.compareTo("=") == 0) {
+            //括号匹配数
+            int tip_bracket = 0;
             for (int i = 0; i < tip_i; i++) {
                 if (Tipcommand[i].compareTo("(") == 0) {
-                    tip_backet++;
+                    tip_bracket++;
                 }
                 if (Tipcommand[i].compareTo(")") == 0) {
-                    tip_backet--;
+                    tip_bracket--;
                 }
             }
-            //如果tip_backet>0，就说明还有左括号未匹配上右括号
-            if (tip_backet > 0) {
-                Tipecode1 = 9;
-                backet = tip_backet;
-            } else if (tip_backet == 0) {
-                //如果=前面是下列字符，=也不合法
+            //若大于0，表明左括号还有未匹配的
+            if (tip_bracket > 0) {
+                Tipcode1 = 9;
+                bracket = tip_bracket;
+            } else if (tip_bracket == 0) {
+                //若前一个字符是以下之一，表明=号不合法
                 if ("√^sincostanloglnn!".indexOf(tipcommand1) != -1) {
-                    Tipecode1 = 6;
+                    Tipcode1 = 6;
                 }
                 //若前一个字符是以下之一，表明=号不合法
                 if ("+-×÷".indexOf(tipcommand1) != -1) {
-                    Tipecode1 = 5;
+                    Tipcode1 = 5;
                 }
             }
         }
         //若命令式以下之一，则显示相应的帮助信息
-        if (tipcommand2.compareTo("MC") == 0) Tipecode2 = 1;
-        if (tipcommand2.compareTo("C") == 0) Tipecode2 = 2;
-        if (tipcommand2.compareTo("DRG") == 0) Tipecode2 = 3;
-        if (tipcommand2.compareTo("Bksp") == 0) Tipecode2 = 4;
-        if (tipcommand2.compareTo("sin") == 0) Tipecode2 = 5;
-        if (tipcommand2.compareTo("cos") == 0) Tipecode2 = 6;
-        if (tipcommand2.compareTo("tan") == 0) Tipecode2 = 7;
-        if (tipcommand2.compareTo("log") == 0) Tipecode2 = 8;
-        if (tipcommand2.compareTo("ln") == 0) Tipecode2 = 9;
-        if (tipcommand2.compareTo("n!") == 0) Tipecode2 = 10;
-        if (tipcommand2.compareTo("√") == 0) Tipecode2 = 11;
-        if (tipcommand2.compareTo("^") == 0) Tipecode2 = 12;
+        if (tipcommand2.compareTo("MC") == 0) Tipcode2 = 1;
+        if (tipcommand2.compareTo("C") == 0) Tipcode2 = 2;
+        if (tipcommand2.compareTo("DRG") == 0) Tipcode2 = 3;
+        if (tipcommand2.compareTo("Bksp") == 0) Tipcode2 = 4;
+        if (tipcommand2.compareTo("sin") == 0) Tipcode2 = 5;
+        if (tipcommand2.compareTo("cos") == 0) Tipcode2 = 6;
+        if (tipcommand2.compareTo("tan") == 0) Tipcode2 = 7;
+        if (tipcommand2.compareTo("log") == 0) Tipcode2 = 8;
+        if (tipcommand2.compareTo("ln") == 0) Tipcode2 = 9;
+        if (tipcommand2.compareTo("n!") == 0) Tipcode2 = 10;
+        if (tipcommand2.compareTo("√") == 0) Tipcode2 = 11;
+        if (tipcommand2.compareTo("^") == 0) Tipcode2 = 12;
         //显示帮助和错误信息
-        TipShow(backet, Tipecode1, Tipecode2, tipcommand1, tipcommand2);
+        TipShow(bracket, Tipcode1, Tipcode2, tipcommand1, tipcommand2);
     }
 
     /*
-      * 反馈Tip信息，加强人机交互，与TipChecker()配合使用
-      */
+     * 反馈Tip信息，加强人机交互，与TipChecker()配合使用
+     */
     private void TipShow(int bracket, int tipcode1, int tipcode2,
                          String tipcommand1, String tipcommand2) {
         String tipmessage = "";
@@ -619,49 +645,29 @@ public class MainActivity extends Activity {
     }
 
     /*
-     * 判断一个str是否是合法的，返回值为true、false
-     * 只包含0123456789.()sincostanlnlogn!+-×÷√^的是合法的str，返回true
-     * 包含了除0123456789.()sincostanlnlogn!+-×÷√^以外的字符的str为非法的，返回false
+     * 整个计算核心，只要将表达式的整个字符串传入calc().process()就可以实行计算了
+     * 算法包括以下几部分：
+     * 1、计算部分           process(String str)  当然，这是建立在查错无错误的情况下
+     * 2、数据格式化      FP(double n)         使数据有相当的精确度
+     * 3、阶乘算法           N(double n)          计算n!，将结果返回
+     * 4、错误提示          showError(int code ,String str)  将错误返回
      */
-    private boolean right(String str) {
-        for (int i = 0; i < str.length(); i++) {
-            if (str.charAt(i) != '1' && str.charAt(i) != '2' && str.charAt(i) != '3' && str.charAt(i) != '4'
-                    && str.charAt(5) != '1' && str.charAt(6) != '1' && str.charAt(7) != '1' && str.charAt(8) != '1' &&
-                    str.charAt(i) != '9' && str.charAt(i) != '.' && str.charAt(i) != '(' && str.charAt(i) != ')' &&
-                    str.charAt(i) != 's' && str.charAt(i) != 'i' && str.charAt(i) != 'n' && str.charAt(i) != 'c' && str.charAt(i) != 'o' &&
-                    str.charAt(i) != 't' && str.charAt(i) != 'a' && str.charAt(i) != 'l' && str.charAt(i) != 'o' &&
-                    str.charAt(i) != 'g' && str.charAt(i) != '!' && str.charAt(i) != '+' &&
-                    str.charAt(i) != '×' && str.charAt(i) != '÷' && str.charAt(i) != '√' && str.charAt(i) != '^') {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-    /*
-       * 整个计算核心，只要将表达式的整个字符串传入calc().process()就可以实行计算了
-       * 算法包括以下几部分：
-       * 1、计算部分           process(String str)  当然，这是建立在查错无错误的情况下
-       * 2、数据格式化      FP(double n)         使数据有相当的精确度
-       * 3、阶乘算法           N(double n)          计算n!，将结果返回
-       * 4、错误提示          showError(int code ,String str)  将错误返回
-       */
     public class calc {
         public calc() {
+
         }
 
-        /*
-                  * 计算表达式
-                  * 从左向右扫描，数字入number栈，运算符入operator栈
-                  * +-基本优先级为1，×÷基本优先级为2，log ln sin cos tan n!基本优先级为3，√^基本优先级为4
-                  * 括号内层运算符比外层同级运算符优先级高4
-                  * 当前运算符优先级高于栈顶压栈，低于栈顶弹出一个运算符与两个数进行运算
-                  * 重复直到当前运算符大于栈顶
-                  * 扫描完后对剩下的运算符与数字依次计算
-                  */
         final int MAXLEN = 500;
 
+        /*
+         * 计算表达式
+         * 从左向右扫描，数字入number栈，运算符入operator栈
+         * +-基本优先级为1，×÷基本优先级为2，log ln sin cos tan n!基本优先级为3，√^基本优先级为4
+         * 括号内层运算符比外层同级运算符优先级高4
+         * 当前运算符优先级高于栈顶压栈，低于栈顶弹出一个运算符与两个数进行运算
+         * 重复直到当前运算符大于栈顶
+         * 扫描完后对剩下的运算符与数字依次计算
+         */
         public void process(String str) {
             int weightPlus = 0, topOP = 0,
                     topNum = 0, flag = 1, weightTemp = 0;
@@ -676,11 +682,10 @@ public class MainActivity extends Activity {
             number = new double[MAXLEN];
             operator = new char[MAXLEN];
             String expression = str;
-            StringTokenizer expToken = new StringTokenizer(expression);
+            StringTokenizer expToken = new StringTokenizer(expression, "+-×÷()sctgl!√^");
             int i = 0;
             while (i < expression.length()) {
                 ch = expression.charAt(i);
-
                 //判断正负数
                 if (i == 0) {
                     if (ch == '-') {
@@ -701,7 +706,7 @@ public class MainActivity extends Activity {
                     //将ch_gai多移的位数移回来
                     if (i >= expression.length()) {
                         //说明已经取完了最后一个数字
-                        i -= i;
+                        i -= 1;
                     } else {
                         i -= 2;
                     }
@@ -731,7 +736,7 @@ public class MainActivity extends Activity {
                         //'×''÷'的优先级稍高，为2
                         case '÷':
                         case '×':
-                            weightTemp = 22 + weightPlus;
+                            weightTemp = 2 + weightPlus;
                             break;
                         //sincos之类优先级为3：
                         case 's':
@@ -752,7 +757,8 @@ public class MainActivity extends Activity {
                     //如果当前优先级大于堆栈顶部元素，直接入栈
                     if (topOP == 0 || weight[topOP - 1] < weightTemp) {
                         weight[topOP] = weightTemp;
-                        operator[topOP++] = ch;
+                        operator[topOP] = ch;
+                        topOP++;
                     } else {
                         //否则将堆栈中运算符逐个取出，直到当前堆栈顶部运算符优先级小于当前优先级
                         while (topOP > 0 && weight[topOP - 1] >= weightTemp) {
@@ -787,6 +793,7 @@ public class MainActivity extends Activity {
                                     number[topNum - 2] = Math.pow(number[topNum - 2], number[topNum - 1]);
                                     break;
                                 //进行角度弧度判断的计算及转换
+                                //sin
                                 //sin
                                 case 's':
                                     if (drg_flag == true) {
@@ -974,7 +981,35 @@ public class MainActivity extends Activity {
             mem.setText(str_old + "=" + String.valueOf(FP(number[0])));
         }
 
-        private void showError(int code, String str) {
+        /*
+         * FP = floating point 控制小数位数，达到精度
+         * 否则会出现 0.6-0.2=0.39999999999999997的情况，用FP即可解决，使得数为0.4
+         * 本格式精度为15位
+         */
+        public double FP(double n) {
+            //NumberFormat format=NumberFormat.getInstance();  //创建一个格式化类f
+            //format.setMaximumFractionDigits(18);    //设置小数位的格式
+            DecimalFormat format = new DecimalFormat("0.#############");
+            return Double.parseDouble(format.format(n));
+        }
+
+        /*
+         * 阶乘算法
+         */
+        public double N(double n) {
+            int i = 0;
+            double sum = 1;
+            //依次将小于等于n的值相乘
+            for (i = 1; i <= n; i++) {
+                sum = sum * i;
+            }
+            return sum;
+        }
+
+        /*
+         * 错误提示，按了"="之后，若计算式在process()过程中，出现错误，则进行提示
+         */
+        public void showError(int code, String str) {
             String message = "";
             switch (code) {
                 case 1:
@@ -989,29 +1024,5 @@ public class MainActivity extends Activity {
             input.setText("\"" + str + "\"" + ": " + message);
             tip.setText(message + "\n" + "计算完毕，要继续请按归零键 C");
         }
-
-    }
-
-    /*
-           * FP = floating point 控制小数位数，达到精度
-           * 否则会出现 0.6-0.2=0.39999999999999997的情况，用FP即可解决，使得数为0.4
-           * 本格式精度为15位
-           */
-    public double FP(double n) {
-        //NumberFormat format=NumberFormat.getInstance();  //创建一个格式化类f
-        //format.setMaximumFractionDigits(18);    //设置小数位的格式
-        DecimalFormat format = new DecimalFormat("0.#############");
-        return Double.parseDouble(format.format(n));
-    }
-
-
-    private double N(double n) {
-        int i = 0;
-        double sum = 1;
-        //依次将小于等于n的值相乘
-        for (i = 1; i <= n; i++) {
-            sum = sum * i;
-        }
-        return sum;
     }
 }
