@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Calculator</string>
+    <string name="app_name">计算器</string>
     <string name="mem">MEM:</string>
     <string name="welcomeuse">欢迎使用！</string>
     <string name="tips">提示</string>
