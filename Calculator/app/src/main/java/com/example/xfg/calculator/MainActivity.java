@@ -7,7 +7,6 @@ import java.text.DecimalFormat;
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.*;
-import android.util.Log;
 import android.view.View.*;
 import android.view.*;
 
