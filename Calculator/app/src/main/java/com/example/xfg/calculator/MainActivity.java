@@ -801,6 +801,7 @@ public class MainActivity extends Activity {
                                     } else {
                                         number[topNum - 1] = Math.sin(number[topNum - 1]);
                                     }
+                                    topNum++;
                                     break;
                                 case 'c':
                                     if (drg_flag == true) {
@@ -808,6 +809,7 @@ public class MainActivity extends Activity {
                                     } else {
                                         number[topNum - 1] = Math.cos(number[topNum - 1]);
                                     }
+                                    topNum++;
                                     break;
                                 case 't':
                                     if (drg_flag == true) {
@@ -823,6 +825,7 @@ public class MainActivity extends Activity {
                                         }
                                         number[topNum - 1] = Math.tan(number[topNum - 1]);
                                     }
+                                    topNum++;
                                     break;
                                 case 'g':
                                     if (number[topNum - 1] <= 0) {
