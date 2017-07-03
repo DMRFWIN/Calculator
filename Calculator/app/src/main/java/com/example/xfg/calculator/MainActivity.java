@@ -244,7 +244,7 @@ public class MainActivity extends Activity {
             } else if (command.compareTo("MC") == 0) {
                 mem.setText("0");
                 //如果按”exit“则退出程序
-            } else if (command.compareTo("exit") == 0) {
+            } else if (command.compareTo("EXIT") == 0) {
                 System.exit(0);
                 //如果输入的是=号，并且输入合法
             } else if (command.compareTo("=") == 0 && tip_lock && right(str) && equals_flag) {
